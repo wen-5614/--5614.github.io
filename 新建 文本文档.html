@@ -1,0 +1,373 @@
+<html><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>赛事核心数据对比：苏超2025 vs 中超2024 | 樱花粉·浅蓝柱状图</title>
+    <!-- 引入 ECharts 核心库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #faf5f3 0%, #f0eae8 100%);
+            font-family: 'Segoe UI', 'Roboto', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        .chart-card {
+            max-width: 1300px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 42px;
+            box-shadow: 0 28px 48px -18px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,220,200,0.4);
+            overflow: visible;
+            transition: all 0.2s;
+        }
+        .chart-header {
+            background: linear-gradient(98deg, #f7cfd8 0%, #fadadd 100%);
+            padding: 24px 32px;
+            color: #7a3e4a;
+            border-radius: 42px 42px 0 0;
+            border-bottom: 1px solid #ffe2e7;
+        }
+        .chart-header h1 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -0.2px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            color: #b34e62;
+        }
+        .chart-header h1 small {
+            font-size: 0.75rem;
+            background: #ffffffaa;
+            padding: 5px 16px;
+            border-radius: 60px;
+            font-weight: 600;
+            color: #c25d72;
+            backdrop-filter: blur(2px);
+        }
+        .chart-header p {
+            opacity: 0.8;
+            font-size: 0.92rem;
+            color: #9b5a68;
+            font-weight: 500;
+        }
+        .chart-container {
+            padding: 36px 28px 20px 28px;
+            background: #ffffff;
+            overflow: visible;
+        }
+        #mainChart {
+            width: 100%;
+            height: 580px;
+            background: transparent;
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #b38692;
+            padding: 18px 24px 26px;
+            border-top: 1px solid #ffe2e8;
+            background: #fffcfb;
+            border-radius: 0 0 42px 42px;
+            font-weight: 500;
+        }
+        @media (max-width: 800px) {
+            .chart-header h1 { font-size: 1.4rem; }
+            #mainChart { height: 520px; }
+            .chart-container { padding: 26px 16px 16px; }
+        }
+        @media (max-width: 550px) {
+            #mainChart { height: 480px; }
+        }
+    </style>
+</head>
+<body>
+<div class="chart-card">
+    <div class="chart-header">
+        <h1>
+            🌸 赛事核心数据对比 · 苏超2025 vs 中超2024
+            <small>樱花粉 & 浅蓝主题</small>
+        </h1>
+        <p>场均现场观众 | 单场最高观众 | 直播观看量 | 赞助商数量 —— 数据清晰，无任何遮挡</p>
+    </div>
+    <div class="chart-container">
+        <div id="mainChart"></div>
+    </div>
+    <div class="footer-note">
+        📊 数据基于Excel表格：苏超(2025) & 中超(2024) &nbsp;|&nbsp; 🎨 主色调：樱花粉·浅水蓝 &nbsp;|&nbsp; ✨ 柱顶数值完整 + 智能防遮挡布局 &nbsp;|&nbsp; 🔍 支持缩放/保存/切换图表
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ----- 依据excel表格内容定义4个指标 -----
+        const indicators = [
+            '场均现场观众（万人）', 
+            '单场最高观众（万人）', 
+            '直播观看量（亿次）', 
+            '赞助商数量（家）'
+        ];
+        
+        // 苏超 2025 数据
+        const suValues = [2.86, 6.23, 22.2, 41];
+        // 中超 2024 数据
+        const csValues = [2.43, 5.26, 8.5, 30];
+        
+        // 单位后缀
+        const units = ['万人', '万人', '亿次', '家'];
+        
+        // 计算苏超相对于中超的增长率
+        const growthRates = suValues.map((val, idx) => {
+            let base = csValues[idx];
+            if(base === 0) return '+∞%';
+            let rate = ((val - base) / base * 100).toFixed(1);
+            return (rate > 0 ? `+${rate}%` : `${rate}%`);
+        });
+        
+        const dom = document.getElementById('mainChart');
+        const myChart = echarts.init(dom);
+        
+        // 樱花粉渐变
+        const sakuraGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#FFB7C5' },
+            { offset: 1, color: '#F48FB1' }
+        ]);
+        
+        // 浅水蓝渐变
+        const blueGradient = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#AEE2F0' },
+            { offset: 1, color: '#6DC5DF' }
+        ]);
+        
+        // 动态计算Y轴最大值，确保标签不遮挡
+        const globalMax = Math.max(...suValues, ...csValues);
+        const yAxisMax = Math.ceil(globalMax * 1.3);
+        
+        const option = {
+            backgroundColor: '#ffffff',
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: { type: 'shadow' },
+                backgroundColor: 'rgba(30,25,35,0.92)',
+                borderColor: '#F48FB1',
+                borderWidth: 1.5,
+                textStyle: { color: '#fff0f0', fontSize: 12.5 },
+                formatter: function(params) {
+                    if (!params || params.length === 0) return '';
+                    let idx = params[0].dataIndex;
+                    let name = indicators[idx];
+                    let suVal = suValues[idx];
+                    let csVal = csValues[idx];
+                    let unit = units[idx];
+                    let growth = growthRates[idx];
+                    return `<strong>🌸 ${name}</strong><br/>
+                            🎀 苏超 2025: <b>${suVal}</b> ${unit}<br/>
+                            💧 中超 2024: <b>${csVal}</b> ${unit}<br/>
+                            <span style="border-top:1px solid #F9B7C8;margin-top:5px;display:inline-block;width:100%;padding-top:4px;">📈 同比变化: ${growth}</span>`;
+                }
+            },
+            legend: {
+                data: [
+                    { name: '苏超 (2025)', icon: 'roundRect', itemStyle: { color: '#F48FB1' } },
+                    { name: '中超 (2024)', icon: 'roundRect', itemStyle: { color: '#6DC5DF' } }
+                ],
+                orient: 'horizontal',
+                left: 'center',
+                top: 0,
+                textStyle: { color: '#b4576b', fontWeight: 'bold', fontSize: 14 },
+                backgroundColor: 'rgba(255,245,245,0.8)',
+                borderRadius: 40,
+                padding: [6, 32, 6, 32],
+                borderWidth: 0,
+                itemGap: 38
+            },
+            grid: {
+                left: '10%',
+                right: '8%',
+                top: '18%',
+                bottom: '12%',
+                containLabel: false,
+                backgroundColor: '#fffdfc'
+            },
+            xAxis: {
+                type: 'category',
+                data: indicators,
+                axisTick: { show: false },
+                axisLine: { lineStyle: { color: '#e2bfc5', width: 2 } },
+                axisLabel: {
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: '#b15366',
+                    rotate: 0,
+                    margin: 18,
+                    fontFamily: 'inherit',
+                    interval: 0
+                },
+                axisPointer: { show: true, type: 'shadow' },
+                name: '🏷️ 核心数据维度',
+                nameLocation: 'middle',
+                nameGap: 48,
+                nameTextStyle: { fontWeight: 'bold', fontSize: 13, color: '#cd7e8f' }
+            },
+            yAxis: {
+                type: 'value',
+                name: '📊 数值（万人 / 亿次 / 家）',
+                nameTextStyle: { fontSize: 12, fontWeight: 600, color: '#b27f8a' },
+                splitLine: { lineStyle: { color: '#f0e0e4', type: 'dashed', width: 1.2 } },
+                axisLabel: { fontSize: 11, color: '#a06876', fontWeight: 500 },
+                axisLine: { show: false },
+                axisTick: { show: false },
+                max: yAxisMax,
+                min: 0,
+                interval: yAxisMax > 50 ? 10 : (yAxisMax > 20 ? 5 : 2),
+                nameGap: 38
+            },
+            series: [
+                {
+                    name: '苏超 (2025)',
+                    type: 'bar',
+                    data: suValues,
+                    itemStyle: {
+                        color: sakuraGradient,
+                        borderRadius: [14, 14, 0, 0],
+                        shadowColor: 'rgba(244, 143, 177, 0.35)',
+                        shadowBlur: 12,
+                        shadowOffsetY: 5
+                    },
+                    label: {
+                        show: true,
+                        position: 'top',
+                        fontWeight: 'bold',
+                        fontSize: 13,
+                        color: '#C95C73',
+                        formatter: (params) => {
+                            let idx = params.dataIndex;
+                            let val = params.value;
+                            let unit = units[idx];
+                            let formattedVal = val % 1 === 0 ? val : val.toFixed(1);
+                            return `${formattedVal} ${unit}`;
+                        },
+                        offset: [0, 12],
+                        fontFamily: 'monospace',
+                        backgroundColor: 'rgba(255, 240, 240, 0.92)',
+                        padding: [4, 12, 4, 12],
+                        borderRadius: 24,
+                        borderWidth: 0
+                    },
+                    barWidth: '32%',
+                    barGap: '0.25',
+                    emphasis: { focus: 'series' },
+                    animation: true,
+                    animationDuration: 1100,
+                    animationEasing: 'elasticOut'
+                },
+                {
+                    name: '中超 (2024)',
+                    type: 'bar',
+                    data: csValues,
+                    itemStyle: {
+                        color: blueGradient,
+                        borderRadius: [14, 14, 0, 0],
+                        shadowColor: 'rgba(109, 197, 223, 0.35)',
+                        shadowBlur: 12,
+                        shadowOffsetY: 5
+                    },
+                    label: {
+                        show: true,
+                        position: 'top',
+                        fontWeight: 'bold',
+                        fontSize: 13,
+                        color: '#3F8DA8',
+                        formatter: (params) => {
+                            let idx = params.dataIndex;
+                            let val = params.value;
+                            let unit = units[idx];
+                            let formattedVal = val % 1 === 0 ? val : val.toFixed(1);
+                            return `${formattedVal} ${unit}`;
+                        },
+                        offset: [0, 12],
+                        fontFamily: 'monospace',
+                        backgroundColor: 'rgba(230, 248, 252, 0.95)',
+                        padding: [4, 12, 4, 12],
+                        borderRadius: 24,
+                        borderWidth: 0
+                    },
+                    barWidth: '32%',
+                    emphasis: { focus: 'series' },
+                    animation: true,
+                    animationDuration: 1100,
+                    animationDelay: 150,
+                    animationEasing: 'elasticOut'
+                }
+            ],
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 0,
+                    end: 100,
+                    zoomOnMouseWheel: true,
+                    moveOnMouseMove: true
+                },
+                {
+                    type: 'slider',
+                    show: true,
+                    bottom: 8,
+                    height: 18,
+                    start: 0,
+                    end: 100,
+                    brushSelect: false,
+                    backgroundColor: '#fef1f0',
+                    fillerColor: 'rgba(244, 143, 177, 0.2)',
+                    borderColor: '#fbc4ce'
+                }
+            ],
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: { title: '保存图片', backgroundColor: '#ffffff' },
+                    restore: { title: '重置视图' },
+                    magicType: { type: ['line', 'bar'], title: { line: '折线图', bar: '柱状图' } }
+                },
+                right: 24,
+                top: 8,
+                iconSize: 18
+            },
+            graphic: [
+                {
+                    type: 'text',
+                    left: 'center',
+                    top: 35,
+                    style: {
+                        text: '🌸 苏超赞助商41家，直播量22.2亿次；中超赞助商30家，直播量8.5亿次',
+                        fill: '#c28997',
+                        fontSize: 12,
+                        fontWeight: 'normal'
+                    },
+                    z: 2
+                }
+            ]
+        };
+        
+        myChart.setOption(option);
+        
+        // 窗口自适应
+        window.addEventListener('resize', () => myChart.resize());
+        setTimeout(() => myChart.resize(), 200);
+        
+        console.log('✅ 图表渲染完成：樱花粉浅蓝主题 | 数据无遮挡 | 自适应布局');
+    })();
+</script>
+</body>
+</html></html>
